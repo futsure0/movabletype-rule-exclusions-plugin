@@ -1,0 +1,119 @@
+---
+meta:
+  author: "Gen Tobimatsu"
+  description: "Movable Type Rule Exclusions Plugin - entries, pages and templates"
+rule_id: 9533110
+tests:
+  - test_id: 1
+    desc: Saving a page with HTML, script tags and template tags in the body
+    stages:
+      - input:
+          dest_addr: 127.0.0.1
+          headers:
+            Host: localhost
+            User-Agent: OWASP CRS test agent
+            Accept: text/html,application/xhtml+xml,*/*;q=0.8
+            Content-Type: application/x-www-form-urlencoded
+            Cookie: mt_user=editor%3A%3Aabcdef0123456789%3A%3A0
+          port: 80
+          method: POST
+          version: "HTTP/1.1"
+          uri: /cgi-bin/mt/mt.cgi
+          data: "__mode=save&_type=page&text=%3C%24mt%3ASetVar+name%3D%22a%22+value%3D%221%22%24%3E%0A%3C%21--+c+--%3E%3Cscript+src%3D%22https%3A%2F%2Fmaps.googleapis.com%2Fmaps%2Fapi%2Fjs%22%3E%3C%2Fscript%3E%3Ca+onclick%3D%22f()%22%3Ex%3C%2Fa%3E"
+        output:
+          log:
+            no_expect_ids: [941100, 941110, 941120, 941160, 941180, 934100]
+  - test_id: 2
+    desc: Saving an entry with a script tag in the extended body
+    stages:
+      - input:
+          dest_addr: 127.0.0.1
+          headers:
+            Host: localhost
+            User-Agent: OWASP CRS test agent
+            Accept: text/html,application/xhtml+xml,*/*;q=0.8
+            Content-Type: application/x-www-form-urlencoded
+            Cookie: mt_user=editor%3A%3Aabcdef0123456789%3A%3A0
+          port: 80
+          method: POST
+          version: "HTTP/1.1"
+          uri: /cgi-bin/mt/mt.cgi
+          data: "__mode=save&_type=entry&text_more=%3Cscript%3Ealert(1)%3C%2Fscript%3E"
+        output:
+          log:
+            no_expect_ids: [941100, 941110, 941160]
+  - test_id: 3
+    desc: The administration script can be in any directory
+    stages:
+      - input:
+          dest_addr: 127.0.0.1
+          headers:
+            Host: localhost
+            User-Agent: OWASP CRS test agent
+            Accept: text/html,application/xhtml+xml,*/*;q=0.8
+            Content-Type: application/x-www-form-urlencoded
+            Cookie: mt_user=editor%3A%3Aabcdef0123456789%3A%3A0
+          port: 80
+          method: POST
+          version: "HTTP/1.1"
+          uri: /admin/mt.cgi
+          data: "__mode=save&_type=page&text=%3C%24mt%3ASetVar+name%3D%22a%22+value%3D%221%22%24%3E%0A%3C%21--+c+--%3E%3Cscript+src%3D%22https%3A%2F%2Fmaps.googleapis.com%2Fmaps%2Fapi%2Fjs%22%3E%3C%2Fscript%3E%3Ca+onclick%3D%22f()%22%3Ex%3C%2Fa%3E"
+        output:
+          log:
+            no_expect_ids: [941100, 941160]
+  - test_id: 4
+    desc: Without the login cookie the body stays checked
+    stages:
+      - input:
+          dest_addr: 127.0.0.1
+          headers:
+            Host: localhost
+            User-Agent: OWASP CRS test agent
+            Accept: text/html,application/xhtml+xml,*/*;q=0.8
+            Content-Type: application/x-www-form-urlencoded
+          port: 80
+          method: POST
+          version: "HTTP/1.1"
+          uri: /cgi-bin/mt/mt.cgi
+          data: "__mode=save&_type=page&text=%3C%24mt%3ASetVar+name%3D%22a%22+value%3D%221%22%24%3E%0A%3C%21--+c+--%3E%3Cscript+src%3D%22https%3A%2F%2Fmaps.googleapis.com%2Fmaps%2Fapi%2Fjs%22%3E%3C%2Fscript%3E%3Ca+onclick%3D%22f()%22%3Ex%3C%2Fa%3E"
+        output:
+          log:
+            expect_ids: [941100]
+  - test_id: 5
+    desc: The title stays checked
+    stages:
+      - input:
+          dest_addr: 127.0.0.1
+          headers:
+            Host: localhost
+            User-Agent: OWASP CRS test agent
+            Accept: text/html,application/xhtml+xml,*/*;q=0.8
+            Content-Type: application/x-www-form-urlencoded
+            Cookie: mt_user=editor%3A%3Aabcdef0123456789%3A%3A0
+          port: 80
+          method: POST
+          version: "HTTP/1.1"
+          uri: /cgi-bin/mt/mt.cgi
+          data: "__mode=save&_type=page&title=%3Cscript%3Ealert(1)%3C%2Fscript%3E"
+        output:
+          log:
+            expect_ids: [941100]
+  - test_id: 6
+    desc: Other scripts stay checked
+    stages:
+      - input:
+          dest_addr: 127.0.0.1
+          headers:
+            Host: localhost
+            User-Agent: OWASP CRS test agent
+            Accept: text/html,application/xhtml+xml,*/*;q=0.8
+            Content-Type: application/x-www-form-urlencoded
+            Cookie: mt_user=editor%3A%3Aabcdef0123456789%3A%3A0
+          port: 80
+          method: POST
+          version: "HTTP/1.1"
+          uri: /cgi-bin/mt/mt-comments.cgi
+          data: "__mode=save&_type=entry&text_more=%3Cscript%3Ealert(1)%3C%2Fscript%3E"
+        output:
+          log:
+            expect_ids: [941100]

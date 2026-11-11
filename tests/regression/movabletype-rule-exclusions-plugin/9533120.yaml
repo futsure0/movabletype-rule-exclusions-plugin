@@ -1,0 +1,43 @@
+---
+meta:
+  author: "Gen Tobimatsu"
+  description: "Movable Type Rule Exclusions Plugin - asset upload"
+rule_id: 9533120
+tests:
+  - test_id: 1
+    desc: Uploading a file with a line that starts with -- while logged in
+    stages:
+      - input:
+          dest_addr: 127.0.0.1
+          headers:
+            Host: localhost
+            User-Agent: OWASP CRS test agent
+            Accept: text/html,application/xhtml+xml,*/*;q=0.8
+            Content-Type: multipart/form-data; boundary=XB
+            Cookie: mt_user=editor%3A%3Aabcdef0123456789%3A%3A0
+          port: 80
+          method: POST
+          version: "HTTP/1.1"
+          uri: /cgi-bin/mt/mt.cgi
+          data: "--XB\r\nContent-Disposition: form-data; name=\"__mode\"\r\n\r\nupload_file\r\n--XB\r\nContent-Disposition: form-data; name=\"file\"; filename=\"a.txt\"\r\nContent-Type: text/plain\r\n\r\nline1\r\n--not-a-boundary\r\nline3\r\n--XB--\r\n"
+        output:
+          log:
+            no_expect_ids: [200004]
+  - test_id: 2
+    desc: Without the login cookie the upload stays checked
+    stages:
+      - input:
+          dest_addr: 127.0.0.1
+          headers:
+            Host: localhost
+            User-Agent: OWASP CRS test agent
+            Accept: text/html,application/xhtml+xml,*/*;q=0.8
+            Content-Type: multipart/form-data; boundary=XB
+          port: 80
+          method: POST
+          version: "HTTP/1.1"
+          uri: /cgi-bin/mt/mt.cgi
+          data: "--XB\r\nContent-Disposition: form-data; name=\"__mode\"\r\n\r\nupload_file\r\n--XB\r\nContent-Disposition: form-data; name=\"file\"; filename=\"a.txt\"\r\nContent-Type: text/plain\r\n\r\nline1\r\n--not-a-boundary\r\nline3\r\n--XB--\r\n"
+        output:
+          log:
+            expect_ids: [200004]
